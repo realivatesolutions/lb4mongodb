@@ -1,0 +1,11 @@
+{
+  "name": "mongo",
+  "connector": "mongodb",
+  "url": "mongodb://protoUser:Password1@localhost:27017/prototype",
+  "host": "localhost",
+  "port": 27017,
+  "user": "protoUser",
+  "password": "Password1",
+  "database": "prototype",
+  "useNewUrlParser": true
+}
