@@ -21,13 +21,13 @@ import {
 import { User } from '../models';
 import { UserRepository, UserRoleRepository } from '../repositories';
 import { Omit } from 'lodash';
-import { Credentials, JWT_SECRET } from '../auth';
+import { Credentials, JWT_SECRET, secured, SecuredType } from '../auth';
 import { promisify } from 'util';
+import { authenticate } from '@loopback/authentication';
 
 
 const { sign } = require('jsonwebtoken');
 const signAsync = promisify(sign);
-
 
 export class UserController {
   constructor(
@@ -69,6 +69,7 @@ export class UserController {
       },
     },
   })
+  @secured(SecuredType.IS_AUTHENTICATED)
   async count(
     @param.query.object('where', getWhereSchemaFor(User)) where?: Where<User>,
   ): Promise<Count> {
@@ -184,6 +185,7 @@ export class UserController {
   }
 
   @post('/users/login')
+  @secured(SecuredType.PERMIT_ALL)
   async login(@requestBody() credentials: Credentials) {
     if (!credentials.username || !credentials.password) throw new HttpErrors.BadRequest('Missing Username or Password');
     const user = await this.userRepository.findOne({ where: { email: credentials.username } });
@@ -192,11 +194,12 @@ export class UserController {
 
     const isPasswordMatched = user.password === credentials.password;
     if (!isPasswordMatched) throw new HttpErrors.Unauthorized('Invalid credentials');
-
     const tokenObject = { username: credentials.username };
-    const token = await signAsync(tokenObject, JWT_SECRET);
-    const roles = await this.userRoleRepository.find({ where: { userId: user.id } });
     const { id, email } = user;
+    const token = await signAsync(tokenObject, JWT_SECRET);
+    console.log(token);
+    const roles = await this.userRoleRepository.find({ where: { userId: id as string } });
+    console.log(roles);
 
     return {
       token,

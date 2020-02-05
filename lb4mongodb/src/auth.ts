@@ -80,7 +80,7 @@ export class MyAuthMetadataProvider extends AuthMetadataProvider {
 }
 
 // the JWT_secret to encrypt and decrypt JWT token
-export const JWT_SECRET = 'changeme';
+export const JWT_SECRET = 'bL@ckP3@rL+3ch';
 
 // the required interface to filter login payload
 export interface Credentials {
@@ -132,12 +132,12 @@ export class MyAuthAuthenticationStrategyProvider implements Provider<Authentica
   ) {
     try {
       const { username } = payload;
-      const user = await this.userRepository.findById(username);
+      const user = await this.userRepository.findOne({ where: { email: username } });
       if (!user) done(null, false);
 
       await this.verifyRoles(username);
 
-      done(null, { name: username, email: user.email, [securityId]: username });
+      done(null, { name: username, email: username, [securityId]: username });
     } catch (err) {
       if (err.name === 'UnauthorizedError') done(null, false);
       done(err, false);
@@ -147,7 +147,6 @@ export class MyAuthAuthenticationStrategyProvider implements Provider<Authentica
   // verify user's role based on the SecuredType
   async verifyRoles(username: string) {
     const { type, roles } = this.metadata;
-
     if ([SecuredType.IS_AUTHENTICATED, SecuredType.PERMIT_ALL].includes(type)) return;
 
     if (type === SecuredType.HAS_ANY_ROLE) {
